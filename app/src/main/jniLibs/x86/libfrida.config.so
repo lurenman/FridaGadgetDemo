@@ -1,0 +1,7 @@
+{
+  "interaction": {
+    "type": "script",
+    "path": "/sdcard/frida-test.js",
+    "on_load": "resume"
+  }
+}
