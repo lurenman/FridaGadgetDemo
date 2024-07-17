@@ -10,7 +10,7 @@
 
 3.把解压好重新命名的so放到jniLibs目录下
 
-<img src="./pic/2.png" alt="2" style="zoom:33%;" />
+<img src="./pic/2.png" alt="2" style="zoom:20%;" />
 
 4.各个架构新建file文件重新命名为例如上图中libfrida.config.so（注意：名字要和libfrida.so对应）
 
