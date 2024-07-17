@@ -1,7 +1,7 @@
 {
   "interaction": {
-    "type": "script",
-    "path": "/data/data/com.example.fridagadgetdemo/files/frida-test.js",
-    "on_load": "resume"
+    "type": "script-directory",
+    "path": "/data/data/com.example.fridagadgetdemo/files/scripts",
+    "on_load": "rescan"
   }
 }

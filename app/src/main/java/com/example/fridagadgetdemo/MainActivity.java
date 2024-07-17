@@ -8,8 +8,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.fridagadgetdemo.databinding.ActivityMainBinding;
 
 import java.io.File;
@@ -17,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Frida_Test";
@@ -56,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                ///data/data/com.example.fridagadgetdemo/files/frida-test.js
-                copyFileFromAssetsToFilesDir("frida-test.js", "frida-test.js");
+                copyFileFromAssetsToFilesDir("frida-hook-student.js", "frida-hook-student.js");
+                copyFileFromAssetsToFilesDir("frida-hook-androidid.js", "frida-hook-androidid.js");
                 //加载fridagadget so 之后就会加载hook脚本
                 System.loadLibrary("frida");
             }
@@ -74,9 +74,12 @@ public class MainActivity extends AppCompatActivity {
             // 打开输入流以读取 assets 中的文件
             in = assetManager.open(assetFileName);
 
-            // 获取 FilesDir 目录，并创建输出流
-            //File filedir = new File("/data/data/com.example.fridagadgetdemo/files");
-            File file = new File(getFilesDir(), targetFileName);
+            // 获取 fileScriptsdir 目录，并创建输出流
+            File fileScriptsdir = new File(getFilesDir().getPath() + "/scripts");
+            if (!fileScriptsdir.exists()) {
+                fileScriptsdir.mkdir();
+            }
+            File file = new File(fileScriptsdir, targetFileName);
             out = new FileOutputStream(file);
 
             // 复制文件
