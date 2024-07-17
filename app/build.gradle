@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.androidApplication)
+    id 'com.android.application'
 }
 
 android {
@@ -15,10 +15,18 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    signingConfigs {
+        release {
+            storeFile file('../hookkeystore.jks')
+            storePassword '123456'
+            keyAlias 'key0'
+            keyPassword '123456'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

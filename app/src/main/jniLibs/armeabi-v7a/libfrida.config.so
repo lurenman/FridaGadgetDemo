@@ -1,7 +1,7 @@
 {
   "interaction": {
     "type": "script",
-    "path": "/sdcard/frida-test.js",
+    "path": "/data/data/com.example.fridagadgetdemo/files/frida-test.js",
     "on_load": "resume"
   }
 }

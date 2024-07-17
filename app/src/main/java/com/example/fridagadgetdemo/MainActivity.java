@@ -1,19 +1,22 @@
 package com.example.fridagadgetdemo;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.fridagadgetdemo.databinding.ActivityMainBinding;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Frida_Test";
@@ -25,9 +28,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Context mContext;
     private ActivityMainBinding binding;
-    private static String[] PERMISSIONS_STORAGE = {
-            "android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.WRITE_EXTERNAL_STORAGE"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,19 +35,6 @@ public class MainActivity extends AppCompatActivity {
         mContext = this;
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        try {
-            //检测是否有写的权限
-            int permission = ActivityCompat.checkSelfPermission(this,
-                    "android.permission.WRITE_EXTERNAL_STORAGE");
-            if (permission != PackageManager.PERMISSION_GRANTED) {
-                // 没有写的权限，去申请写的权限，会弹出对话框
-                ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, 100);
-            }else {
-                System.loadLibrary("frida");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         binding.btnAndroidId.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,24 +48,63 @@ public class MainActivity extends AppCompatActivity {
         binding.btnClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int result = Student.Add(1, 2);
+                int result = Student.Add(1, 1);
+                Log.d(TAG, "onClick add result:" + result);
                 Toast.makeText(MainActivity.this, result + "", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "onClick: result:" + result);
             }
         });
-
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ///data/data/com.example.fridagadgetdemo/files/frida-test.js
+                copyFileFromAssetsToFilesDir("frida-test.js", "frida-test.js");
+                //加载fridagadget so 之后就会加载hook脚本
+                System.loadLibrary("frida");
+            }
+        }).start();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 100) {
-            if (ActivityCompat.checkSelfPermission(this, PERMISSIONS_STORAGE[1]) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(this, PERMISSIONS_STORAGE[1]) == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(MainActivity.this, "获取存储权限成功", Toast.LENGTH_SHORT).show();
-                System.loadLibrary("frida");
-            } else {
-                Toast.makeText(MainActivity.this, "获取存储权限获取失败", Toast.LENGTH_SHORT).show();
+    public void copyFileFromAssetsToFilesDir(String assetFileName, String targetFileName) {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            // 获取 AssetManager
+            AssetManager assetManager = getAssets();
+
+            // 打开输入流以读取 assets 中的文件
+            in = assetManager.open(assetFileName);
+
+            // 获取 FilesDir 目录，并创建输出流
+            //File filedir = new File("/data/data/com.example.fridagadgetdemo/files");
+            File file = new File(getFilesDir(), targetFileName);
+            out = new FileOutputStream(file);
+
+            // 复制文件
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+
+            // 刷新输出流（如果需要）
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 关闭流
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
