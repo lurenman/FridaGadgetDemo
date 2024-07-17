@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     // Used to load the 'fridagadgetdemo' library on application startup.
     static {
         System.loadLibrary("fridagadgetdemo");
+        //可以先加载，当scripts有文件添加的时候，会自动注入，因为设置了"on_load": "rescan"
+        System.loadLibrary("frida");
     }
 
     private Context mContext;
@@ -58,8 +60,6 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 copyFileFromAssetsToFilesDir("frida-hook-student.js", "frida-hook-student.js");
                 copyFileFromAssetsToFilesDir("frida-hook-androidid.js", "frida-hook-androidid.js");
-                //加载fridagadget so 之后就会加载hook脚本
-                System.loadLibrary("frida");
             }
         }).start();
     }
