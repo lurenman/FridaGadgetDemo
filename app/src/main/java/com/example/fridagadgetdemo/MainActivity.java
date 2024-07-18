@@ -4,19 +4,23 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.fridagadgetdemo.databinding.ActivityMainBinding;
+import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.fridagadgetdemo.databinding.ActivityMainBinding;
+import com.example.fridagadgetdemo.utils.AssetCopier;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Frida_Test";
@@ -24,8 +28,6 @@ public class MainActivity extends AppCompatActivity {
     // Used to load the 'fridagadgetdemo' library on application startup.
     static {
         System.loadLibrary("fridagadgetdemo");
-        //可以先加载，当scripts有文件添加的时候，会自动注入，因为设置了"on_load": "rescan"
-        System.loadLibrary("frida");
     }
 
     private Context mContext;
@@ -55,13 +57,46 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, result + "", Toast.LENGTH_SHORT).show();
             }
         });
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                copyFileFromAssetsToFilesDir("frida-hook-student.js", "frida-hook-student.js");
-                copyFileFromAssetsToFilesDir("frida-hook-androidid.js", "frida-hook-androidid.js");
+                try {
+                    String cpuApi = getCpuApi();
+                    if (!TextUtils.isEmpty(cpuApi)) {
+                        AssetCopier copier = new AssetCopier(mContext);
+                        String filesDirPath = mContext.getFilesDir().getAbsolutePath();
+                        Log.d(TAG, "filesDirPath: " + filesDirPath);
+                        //主要copy到file目录，解决系统多开的问题
+                        copier.copyAssetsFolder("frida", filesDirPath + File.separator + "frida");
+                        String soPath = filesDirPath + File.separator + "frida" + File.separator + cpuApi + File.separator + "libfrida.so";
+                        Log.d(TAG, "soPath: " + soPath);
+                        System.load(soPath);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
+    }
+
+
+    private String getCpuApi() {
+        String abi = "";
+        try {
+            Process process = Runtime.getRuntime().exec("getprop ro.product.cpu.abi");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = reader.readLine();
+            if (line != null) {
+                // line 现在是CPU架构，如 "armeabi-v7a", "arm64-v8a", "x86", "x86_64" 等
+                abi = line;
+                Log.d(TAG, "CPU_ABI:" + line);
+            }
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return abi;
     }
 
     public void copyFileFromAssetsToFilesDir(String assetFileName, String targetFileName) {
@@ -75,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             in = assetManager.open(assetFileName);
 
             // 获取 fileScriptsdir 目录，并创建输出流
-            File fileScriptsdir = new File(getFilesDir().getPath() + "/scripts");
+            File fileScriptsdir = new File(getFilesDir().getPath() + "/frida/scripts");
             if (!fileScriptsdir.exists()) {
                 fileScriptsdir.mkdir();
             }

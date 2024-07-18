@@ -1,7 +1,7 @@
 {
   "interaction": {
     "type": "script-directory",
-    "path": "/data/data/com.example.fridagadgetdemo/files/scripts",
+    "path": "../scripts",
     "on_load": "rescan"
   }
 }
