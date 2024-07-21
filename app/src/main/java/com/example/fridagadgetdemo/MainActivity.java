@@ -69,12 +69,15 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "filesDirPath: " + filesDirPath);
                         //主要copy到file目录，解决系统多开的问题
                         copier.copyAssetsFolder("frida", filesDirPath + File.separator + "frida");
+                        //针对只有arm架构的，在模拟器上是arm 32运行翻译x86运行  cpuApi换成x86就可以  ，debug和release包不一样，debug用的arm64-v8a， 用release验证
                         String soPath = filesDirPath + File.separator + "frida" + File.separator + cpuApi + File.separator + "libfrida.so";
                         Log.d(TAG, "soPath: " + soPath);
                         System.load(soPath);
+                        Log.d(TAG, "run: 加载so成功");
                     }
                 } catch (Throwable e) {
                     e.printStackTrace();
+                    Log.e(TAG, "run: 加载so失败 error:"+e.getMessage());
                 }
             }
         }).start();
