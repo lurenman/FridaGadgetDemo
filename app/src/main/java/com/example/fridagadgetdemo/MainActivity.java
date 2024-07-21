@@ -9,8 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.fridagadgetdemo.databinding.ActivityMainBinding;
 import com.example.fridagadgetdemo.utils.AssetCopier;
 
@@ -21,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Frida_Test";
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "soPath: " + soPath);
                         System.load(soPath);
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
